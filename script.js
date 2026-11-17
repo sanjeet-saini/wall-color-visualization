@@ -23,10 +23,15 @@ const roomImages = {
   },
 };
 
+let colorsCache = null;
+
 async function getColors() {
-  const res = await fetch("colors.json");
-  const data = await res.json();
-  return data.common;
+  if (!colorsCache) {
+    const res = await fetch("colors.json");
+    const data = await res.json();
+    colorsCache = data.common;
+  }
+  return colorsCache;
 }
 
 function hexToRgb(hex) {
@@ -114,7 +119,13 @@ function setRoomImages(room) {
 
 async function loadChildPalette() {
   childPalette.innerHTML = "";
-  const colors = createShades(await getColors());
+  let colors;
+  try {
+    colors = createShades(await getColors());
+  } catch {
+    childPalette.textContent = "Could not load colours. Please refresh the page.";
+    return;
+  }
 
   colors.forEach((color) => {
     const div = document.createElement("div");
